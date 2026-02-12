@@ -2,3 +2,5 @@ streamlit
 google-generativeai
 pandas
 python-dateutil
+matplotlib
+plotly
