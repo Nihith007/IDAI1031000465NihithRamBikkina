@@ -1,6 +1,5 @@
 """
 Smart Fitness CoachBot - AI-Powered Personal Training Assistant
-Powered by Google Gemini 2.0 Flash
 """
 
 import streamlit as st
@@ -329,35 +328,6 @@ with st.sidebar:
     # API Key from Streamlit Secrets or Input
     api_key = None
     
-    # Try to get API key from Streamlit secrets first
-    try:
-        if 'GEMINI_API_KEY' in st.secrets:
-            api_key = st.secrets['GEMINI_API_KEY']
-            st.success("✅ API Key loaded from secrets!")
-            genai.configure(api_key=api_key)
-            st.session_state.api_key_configured = True
-        else:
-            # Fallback to manual input
-            api_key = st.text_input("Enter Gemini API Key", type="password", 
-                                   help="Get your API key from Google AI Studio or configure in Streamlit secrets")
-            if api_key:
-                genai.configure(api_key=api_key)
-                st.session_state.api_key_configured = True
-                st.success("✅ API Key Configured!")
-    except Exception as e:
-        # If secrets not available, use text input
-        api_key = st.text_input("Enter Gemini API Key", type="password", 
-                               help="Get your API key from Google AI Studio")
-        if api_key:
-            try:
-                genai.configure(api_key=api_key)
-                st.session_state.api_key_configured = True
-                st.success("✅ API Key Configured!")
-            except Exception as e:
-                st.error(f"❌ Invalid API Key: {str(e)}")
-                st.session_state.api_key_configured = False
-    
-    st.markdown("---")
     
     # User Profile Section
     st.header("👤 Your Profile")
