@@ -37,10 +37,10 @@ The development process included studying sport-specific training methodologies,
 
 **Model Configuration**
 
-Different slider settings were used to optimize response quality:
-*  A low creativity (0.3) was selected for generating structured, consistent, and safety-oriented workout and recovery plans.
-*  A higher creativity (0.7) was used for more creative outputs, including tactical strategies and nutrition suggestions.
-Prompt engineering was iteratively refined through testing to improve relevance, clarity, and personalization of responses.
+* Different slider settings were used to optimize response quality:
+* A low creativity (0.3) was selected for generating structured, consistent, and safety-oriented workout and recovery plans.
+* A higher creativity (0.7) was used for more creative outputs, including tactical strategies and nutrition suggestions.
+* Prompt engineering was iteratively refined through testing to improve relevance, clarity, and personalization of responses.
 
 **Sample Outputs and Validation**
 
