@@ -60,3 +60,12 @@ The system was tested across multiple sports, playing roles, and injury scenario
 The application was built with Streamlit and integrated with the Gemini API to generate AI-driven responses. The complete project was hosted on GitHub and deployed on Streamlit Cloud, allowing public access to the web application.
 
 **Live app link:** https://idai1031000465nihithrambikkina-4ypsjvkap2xaakm3mkhtf6.streamlit.app/ 
+
+# Screenshots
+
+<img width="297" height="209" alt="image" src="https://github.com/user-attachments/assets/97be7c1e-6a8f-41db-a147-2db2ca11410c" />
+<img width="306" height="470" alt="image" src="https://github.com/user-attachments/assets/8a8796fb-10ec-498a-84c5-63d055e73608" />
+<img width="302" height="284" alt="image" src="https://github.com/user-attachments/assets/c05592eb-f57a-40e0-9bf4-f4e77472f88a" />
+
+
+
