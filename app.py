@@ -1,5 +1,6 @@
 """
 Smart Fitness CoachBot - AI-Powered Personal Training Assistant
+Powered by Google Gemini 2.0 Flash
 """
 
 import streamlit as st
@@ -426,21 +427,16 @@ if st.session_state.api_key_configured:
     feature = st.selectbox(
         "Select a Feature",
         [
-            "1. Full-Body Workout Plan",
-            "2. Recovery Training Schedule",
-            "3. Tactical Coaching Tips",
-            "4. Nutrition Guide (Weekly)",
-            "5. Warm-up & Cooldown Routine",
-            "6. Mental Focus & Tournament Preparation",
+            "1. Full-Body Workout Plan for [Position] in [Sport]",
+            "2. Safe Recovery Training Schedule for Athlete with [Injury]",
+            "3. Tactical Coaching Tips to Improve [Skill] in [Sport]",
+            "4. Week-Long Nutrition Guide for Young Athlete",
+            "5. Personalized Warm-up & Cooldown Routine",
+            "6. Mental Focus Routines for Tournaments",
             "7. Hydration & Electrolyte Strategy",
             "8. Pre-Match Visualization Techniques",
             "9. Positional Decision-Making Drills",
-            "10. Mobility Workouts (Post-Injury)",
-            "11. Strength Training Program",
-            "12. Speed & Agility Training",
-            "13. Endurance Building Program",
-            "14. Match-Day Preparation Plan",
-            "15. Custom Question (Ask Anything)"
+            "10. Mobility Workouts for Post-Injury Recovery"
         ]
     )
     
@@ -467,15 +463,6 @@ if st.session_state.api_key_configured:
         specific_goal = st.text_input(
             "Specific Goal",
             placeholder="e.g., Improve stamina, recover from injury, tournament prep"
-        )
-    
-    # Custom question for feature 15
-    custom_question = ""
-    if "15. Custom Question" in feature:
-        custom_question = st.text_area(
-            "Ask Your Custom Question",
-            placeholder="Type your specific question here...",
-            height=100
         )
     
     # Temperature control for AI creativity
@@ -516,9 +503,9 @@ if st.session_state.api_key_configured:
         - Specific Goal: {specific_goal if specific_goal else 'General improvement'}
         """
         
-        # Prompt templates for each feature
+        # Prompt templates for each feature (10 REQUIRED PROMPTS)
         prompts = {
-            "1. Full-Body Workout Plan": f"""
+            "1. Full-Body Workout Plan for [Position] in [Sport]": f"""
             As an experienced sports coach, create a comprehensive full-body workout plan for a {position} in {sport}.
             
             {user_context}
@@ -529,107 +516,119 @@ if st.session_state.api_key_configured:
             3. Safety considerations based on injury history
             4. Progressive overload strategy
             5. Rest and recovery recommendations
+            6. Weekly schedule with training days
             
-            Format the response in a clear, structured manner with proper sections.
+            Format the response in a clear, structured manner with tables where appropriate.
             """,
             
-            "2. Recovery Training Schedule": f"""
-            As a sports physiotherapist and coach, create a safe recovery training schedule.
+            "2. Safe Recovery Training Schedule for Athlete with [Injury]": f"""
+            As a sports physiotherapist and coach, create a safe recovery training schedule for an athlete with the following injury history: {injury_history if injury_history else 'General recovery needs'}.
             
             {user_context}
             
             Focus on:
             1. Low-impact exercises suitable for injury recovery
-            2. Gradual progression back to full training
-            3. Specific exercises to avoid based on injury history
+            2. Gradual progression back to full training (week-by-week plan)
+            3. Specific exercises to AVOID based on injury history
             4. Flexibility and mobility work
-            5. Timeline for recovery phases (Week 1, 2, 3, etc.)
-            6. Signs to watch for and when to rest
+            5. Timeline for recovery phases (Week 1, 2, 3, 4, etc.)
+            6. Warning signs to watch for and when to rest
+            7. Return-to-sport criteria
             
-            Prioritize safety and long-term health over quick returns.
+            Prioritize safety and long-term health over quick returns. Provide a structured recovery timeline.
             """,
             
-            "3. Tactical Coaching Tips": f"""
-            As a tactical coach specializing in {sport}, provide advanced coaching tips for a {position}.
+            "3. Tactical Coaching Tips to Improve [Skill] in [Sport]": f"""
+            As a tactical coach specializing in {sport}, provide advanced coaching tips for a {position} to improve their tactical skills and game awareness.
             
             {user_context}
             
             Include:
-            1. Position-specific tactical awareness
+            1. Position-specific tactical awareness and responsibilities
             2. Game-reading skills to develop
             3. Decision-making scenarios and solutions
             4. Communication strategies with teammates
-            5. Common mistakes to avoid
+            5. Common tactical mistakes to avoid in this position
             6. Training drills to improve tactical understanding
+            7. Professional examples and best practices
             
-            Use examples from professional play where relevant.
+            Use specific examples from {sport} where relevant. Provide actionable tips.
             """,
             
-            "4. Nutrition Guide (Weekly)": f"""
-            As a sports nutritionist, create a comprehensive weekly nutrition guide.
+            "4. Week-Long Nutrition Guide for Young Athlete": f"""
+            As a sports nutritionist, create a comprehensive week-long nutrition guide for a {user_age}-year-old athlete.
             
             {user_context}
             
             Provide:
-            1. Daily meal plans (Breakfast, Lunch, Dinner, Snacks)
-            2. Pre-training and post-training nutrition
-            3. Macro breakdown (Proteins, Carbs, Fats)
-            4. Specific foods to support their sport and position
-            5. Timing of meals around training
-            6. Hydration recommendations
-            7. Supplement suggestions (if appropriate for age)
+            1. Daily meal plans for 7 days (Breakfast, Lunch, Dinner, Snacks)
+            2. Pre-training and post-training nutrition strategies
+            3. Macro breakdown (Proteins, Carbs, Fats) in a table format
+            4. Specific foods to support {sport} performance
+            5. Timing of meals around training sessions
+            6. Hydration recommendations throughout the day
+            7. Age-appropriate supplement suggestions (if any)
+            8. Sample grocery list
             
-            Consider their dietary restrictions and calorie goals.
+            Consider their dietary restrictions ({diet_type}, allergies: {allergies if allergies else 'none'}) and calorie goals ({calorie_goal}).
+            Present meal plans in an organized table format for easy reference.
             """,
             
-            "5. Warm-up & Cooldown Routine": f"""
-            Create a personalized warm-up and cooldown routine for a {position} in {sport}.
+            "5. Personalized Warm-up & Cooldown Routine": f"""
+            Create a personalized warm-up and cooldown routine specifically for a {position} in {sport}.
             
             {user_context}
             
             Include:
-            1. Dynamic warm-up (10-15 minutes)
-            2. Sport-specific activation drills
-            3. Position-specific movement prep
-            4. Modifications for injury history
-            5. Cooldown and static stretching routine (10-15 minutes)
-            6. Foam rolling and mobility work
+            1. Dynamic warm-up routine (10-15 minutes) - list specific exercises
+            2. Sport-specific activation drills for {sport}
+            3. Position-specific movement preparation for {position}
+            4. Modifications based on injury history: {injury_history if injury_history else 'none'}
+            5. Cooldown routine with static stretching (10-15 minutes)
+            6. Foam rolling sequence and mobility work
+            7. Breathing and recovery techniques
             
-            Make it practical and easy to follow before every training session.
+            Make it practical and easy to follow before every training session. Provide sets and duration for each exercise.
             """,
             
-            "6. Mental Focus & Tournament Preparation": f"""
-            As a sports psychologist, create a mental preparation program for tournaments.
+            "6. Mental Focus Routines for Tournaments": f"""
+            As a sports psychologist, create a comprehensive mental preparation program for a {user_age}-year-old {position} preparing for tournaments in {sport}.
             
             {user_context}
             
             Cover:
             1. Pre-tournament mental preparation (weeks before)
-            2. Day-before and morning-of routines
-            3. Visualization techniques specific to their sport
-            4. Pressure management strategies
-            5. Focus and concentration drills
-            6. Dealing with nervousness and anxiety
-            7. Post-performance reflection techniques
+            2. Week-of-tournament daily routines
+            3. Day-before and morning-of mental checklist
+            4. Visualization techniques specific to {sport} and {position}
+            5. Pressure management and performance anxiety strategies
+            6. Focus and concentration drills
+            7. Dealing with nervousness and pre-game jitters
+            8. Post-performance reflection techniques
+            9. Building confidence and positive self-talk
             
-            Make it age-appropriate and practical.
+            Make it age-appropriate for a {user_age}-year-old and practical to implement.
             """,
             
             "7. Hydration & Electrolyte Strategy": f"""
-            Design a comprehensive hydration and electrolyte strategy for a young athlete.
+            Design a comprehensive hydration and electrolyte strategy for a young {sport} athlete.
             
             {user_context}
             
             Provide:
-            1. Daily water intake recommendations
-            2. Pre, during, and post-training hydration protocols
-            3. Electrolyte balance strategies
-            4. Signs of dehydration to watch for
-            5. Sport-specific hydration needs
-            6. Hydration for different weather conditions
-            7. Recommended drinks and timing
+            1. Daily water intake recommendations (in liters/ml)
+            2. Pre-training hydration protocol (timing and amounts)
+            3. During-training hydration strategy
+            4. Post-training rehydration plan
+            5. Electrolyte balance strategies and when to use sports drinks
+            6. Signs of dehydration to watch for
+            7. Sport-specific hydration needs for {sport}
+            8. Hydration strategies for different weather conditions
+            9. Recommended drinks and timing throughout the day
+            10. Weekly hydration schedule table
             
-            Consider their age and training intensity.
+            Consider their age ({user_age}) and training intensity ({training_intensity}).
+            Present in an organized format with clear guidelines.
             """,
             
             "8. Pre-Match Visualization Techniques": f"""
@@ -638,15 +637,18 @@ if st.session_state.api_key_configured:
             {user_context}
             
             Include:
-            1. Step-by-step visualization process
-            2. What to visualize (successful plays, positioning, etc.)
-            3. When to practice visualization
-            4. Combining visualization with breathing techniques
-            5. Confidence-building mental imagery
-            6. Dealing with negative thoughts
-            7. Creating a pre-match mental routine
+            1. Step-by-step visualization process (how to do it)
+            2. What specifically to visualize as a {position} in {sport}
+            3. Successful plays and scenarios to imagine
+            4. Positioning and movement patterns to rehearse mentally
+            5. When to practice visualization (timeline before match)
+            6. Combining visualization with breathing techniques
+            7. Confidence-building mental imagery
+            8. Dealing with negative thoughts and doubts
+            9. Creating a consistent pre-match mental routine
+            10. Sample visualization script for {sport}
             
-            Make it practical for a young athlete to implement.
+            Make it practical for a {user_age}-year-old athlete to implement independently.
             """,
             
             "9. Positional Decision-Making Drills": f"""
@@ -655,116 +657,45 @@ if st.session_state.api_key_configured:
             {user_context}
             
             Provide:
-            1. Situational awareness drills
-            2. Quick decision-making exercises
-            3. Game-like scenarios to practice
-            4. Reading the game drills
-            5. Positioning and movement drills
-            6. Progressive difficulty levels
-            7. How to practice alone and with teammates
+            1. Situational awareness drills specific to {position}
+            2. Quick decision-making exercises under pressure
+            3. Game-like scenarios to practice (at least 5 scenarios)
+            4. Reading the game/opposition drills
+            5. Positioning and movement decision drills
+            6. Progressive difficulty levels (beginner to advanced)
+            7. Solo practice drills (can do alone)
+            8. Partner/team drills (with teammates)
+            9. Video analysis recommendations
+            10. Performance metrics to track improvement
             
-            Focus on improving their game intelligence.
+            Focus on improving game intelligence and decision-making speed for {position}.
+            Provide clear instructions for each drill.
             """,
             
-            "10. Mobility Workouts (Post-Injury)": f"""
-            Create a mobility and flexibility program for post-injury recovery.
+            "10. Mobility Workouts for Post-Injury Recovery": f"""
+            Create a comprehensive mobility and flexibility program for post-injury recovery.
             
             {user_context}
             
             Include:
-            1. Gentle mobility exercises for affected areas
-            2. Full-body mobility routine
+            1. Gentle mobility exercises for affected areas: {injury_history if injury_history else 'general recovery'}
+            2. Full-body mobility routine (not just injured area)
             3. Dynamic stretching sequences
             4. Yoga-inspired movements for athletes
-            5. Frequency and duration recommendations
-            6. Progression markers
-            7. When to advance to next level
+            5. Frequency recommendations (daily schedule)
+            6. Duration for each session
+            7. Progression markers (when to advance)
+            8. Exercises to avoid during recovery
+            9. Pain management and when to stop
+            10. Timeline: Week 1-2, Week 3-4, Week 5-6, etc.
+            11. Return-to-sport mobility standards
             
-            Emphasize safety and gradual progression.
-            """,
-            
-            "11. Strength Training Program": f"""
-            Design a sport-specific strength training program for a {position} in {sport}.
-            
-            {user_context}
-            
-            Cover:
-            1. Position-specific strength requirements
-            2. Compound and isolation exercises
-            3. Periodization plan (3-month program)
-            4. Rep ranges and load progression
-            5. Core strength development
-            6. Injury prevention exercises
-            7. Integration with sport training
-            
-            Make it safe and effective for their age group.
-            """,
-            
-            "12. Speed & Agility Training": f"""
-            Create a comprehensive speed and agility development program for {sport}.
-            
-            {user_context}
-            
-            Include:
-            1. Acceleration drills
-            2. Top-speed development
-            3. Change of direction training
-            4. Agility ladder work
-            5. Plyometric exercises
-            6. Sport-specific speed drills
-            7. Progression timeline
-            
-            Consider their position requirements and injury history.
-            """,
-            
-            "13. Endurance Building Program": f"""
-            Design an endurance building program for a {position} in {sport}.
-            
-            {user_context}
-            
-            Provide:
-            1. Aerobic base building
-            2. Anaerobic capacity development
-            3. Sport-specific conditioning
-            4. Interval training protocols
-            5. Long-duration training sessions
-            6. Active recovery methods
-            7. 8-week progression plan
-            
-            Balance intensity with recovery needs.
-            """,
-            
-            "14. Match-Day Preparation Plan": f"""
-            Create a complete match-day preparation plan for a {position} in {sport}.
-            
-            {user_context}
-            
-            Cover:
-            1. Night-before routine (sleep, nutrition)
-            2. Morning-of preparation
-            3. Pre-match meal timing and content
-            4. Arrival time and pre-game warm-up
-            5. Mental preparation sequence
-            6. Equipment checklist
-            7. Post-match recovery protocol
-            
-            Make it a comprehensive routine they can follow consistently.
-            """,
-            
-            "15. Custom Question (Ask Anything)": f"""
-            As an expert sports coach and fitness advisor, answer the following question:
-            
-            {custom_question}
-            
-            Context about the athlete:
-            {user_context}
-            
-            Provide a detailed, personalized response that considers their sport, position, 
-            fitness level, and any injury history. Be specific and practical.
+            Emphasize safety and gradual progression. Provide detailed instructions with sets/reps/duration.
+            Make it specific to {sport} demands.
             """
         }
         
-        selected_prompt = prompts.get(feature, prompts["15. Custom Question (Ask Anything)"])
+        selected_prompt = prompts.get(feature, prompts["1. Full-Body Workout Plan for [Position] in [Sport]"])
         
         try:
             # Show loading spinner
@@ -896,5 +827,3 @@ st.markdown("""
     trainers, and medical professionals before starting any new training program.</p>
 </div>
 """, unsafe_allow_html=True)
-
-
