@@ -58,6 +58,11 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
+# Initialize session state
+if 'api_key_configured' not in st.session_state:
+    st.session_state.api_key_configured = False
+if 'chat_history' not in st.session_state:
+    st.session_state.chat_history = []
 
 # ============================================================================
 # TABULAR FORMATTING FUNCTIONS
