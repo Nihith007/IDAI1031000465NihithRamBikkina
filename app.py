@@ -658,7 +658,7 @@ Be conversational, expert, and practical. Do not use HTML tags.
                         "gemini-2.5-flash",
                         generation_config={
                             "temperature": ai_temp,
-                            "max_output_tokens": 2048,
+                            "max_output_tokens": 8192,  # Increased from 2048 to prevent cutoff
                         },
                     )
                     answer = get_ai_response(custom_model, custom_prompt)
