@@ -615,15 +615,26 @@ Emphasise safety throughout. Make the plan specific to {sport} movement demands.
         st.subheader("🧠 Custom Coach Consultation")
         st.markdown(
             '<div class="feature-box">'
-            "Ask any specific coaching question. Your full athlete profile from the sidebar "
-            "is automatically included — the AI will tailor every answer to <strong>you</strong>."
+            "Ask any specific coaching question. Provide your sport and age directly in your question, "
+            "or use the fields below for a fully personalised answer."
             "</div>",
             unsafe_allow_html=True,
         )
 
+        # Direct inputs for Tab 2 (not using sidebar)
+        col_sport, col_age = st.columns(2)
+        with col_sport:
+            custom_sport = st.text_input("Your Sport (optional)", 
+                                         placeholder="e.g. Football, Basketball, Tennis",
+                                         key="custom_sport")
+        with col_age:
+            custom_age = st.number_input("Your Age (optional)", 
+                                         min_value=10, max_value=100, value=18,
+                                         key="custom_age")
+
         user_query = st.text_area(
             "Ask a specific coaching question:",
-            placeholder="e.g. Suggest 3 drills for explosive speed for my position.",
+            placeholder="e.g. Suggest 3 drills for explosive speed. What's the best pre-match meal for a swimmer?",
             height=130,
         )
 
@@ -634,38 +645,37 @@ Emphasise safety throughout. Make the plan specific to {sport} movement demands.
             st.caption(f"Temperature: **{ai_temp:.2f}** — higher = more creative answers")
         with col_b:
             st.info(
-                "💡 **Tip:** The AI already knows your sport, position, age, fitness level, "
-                "injury history and diet from the sidebar. Just ask your question naturally!"
+                "💡 **Tip:** Either mention your sport/age directly in your question, "
+                "or fill in the sport and age fields above for context-aware answers."
             )
 
-        if st.button("🎯 Ask AI Coach", type="primary"):
+        if st.button("🎯 Ask AI Coach", type="primary", key="custom_coach_btn"):
             if not user_query.strip():
                 st.warning("Please type a question before submitting.")
             else:
-                custom_prompt = f"""
-You are a professional sports coach and fitness expert. Answer the question below using the athlete's full profile.
+                # Build minimal context from Tab 2 inputs only (no sidebar)
+                context_parts = []
+                if custom_sport:
+                    context_parts.append(f"Sport: {custom_sport}")
+                if custom_age:
+                    context_parts.append(f"Age: {custom_age} years old")
+                
+                context_note = " | ".join(context_parts) if context_parts else "No additional context provided"
 
-Athlete Profile:
-- Name: {user_name if user_name else 'Athlete'}
-- Age: {user_age} years old
-- Gender: {user_gender}
-- Sport: {sport}
-- Position: {position}
-- Fitness Level: {fitness_level}
-- Injury History: {injury_history if injury_history else 'None'}
-- Diet Type: {diet_type}
-- Food Allergies: {allergies if allergies else 'None'}
-- Calorie Goal: {calorie_goal}
+                custom_prompt = f"""
+You are a professional sports coach and fitness expert. Answer the question below.
+
+Context: {context_note}
 
 Question: {user_query}
 Advice Intensity: {intensity_val}/100
 
 Write your response like this:
-1. Start with 1-2 paragraphs of personalised advice that directly answers the question. Reference the athlete's sport, position, age, and any relevant injury history naturally in the text.
+1. Start with 1-2 paragraphs of advice that directly answers the question. If sport/age was provided, reference it naturally. If not provided, give general expert advice.
 2. Then provide a Markdown table with structured data, drills, steps, or breakdowns relevant to the question (use appropriate columns for the topic).
-3. End with 1 short paragraph of key tips or reminders specific to this athlete.
+3. End with 1 short paragraph of key tips or practical reminders.
 
-Be conversational but expert. Do not use HTML tags. Reference the athlete's profile details throughout your answer.
+Be conversational but expert. Do not use HTML tags.
 """
                 with st.spinner("🤖 Consulting your AI Coach..."):
                     custom_model = genai.GenerativeModel(
@@ -688,6 +698,7 @@ Be conversational but expert. Do not use HTML tags. Reference the athlete's prof
                     data=answer,
                     file_name=f"coachbot_custom_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
                     mime="text/plain",
+                    key="custom_download_btn"
                 )
 
 # ─────────────────────────────────────────────
