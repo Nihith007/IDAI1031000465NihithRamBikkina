@@ -611,18 +611,11 @@ Emphasise safety throughout. Make the plan specific to {sport} movement demands.
     # TAB 2 — CUSTOM COACH
     # ══════════════════════════════════════════
     with tab2:
-        # ── CSS TO HIDE SIDEBAR IN TAB 2 ──
-        st.markdown("""
-            <style>
-                [data-testid="stSidebar"] { display: none; }
-                [data-testid="stSidebarNav"] { display: none; }
-            </style>
-        """, unsafe_allow_html=True)
 
         st.subheader("🧠 Custom Coach Consultation")
         st.markdown(
             '<div class="feature-box">'
-            "Ask any specific coaching question. Your full athlete profile "
+            "Ask any specific coaching question. Your full athlete profile from the sidebar "
             "is automatically included — the AI will tailor every answer to <strong>you</strong>."
             "</div>",
             unsafe_allow_html=True,
@@ -642,13 +635,11 @@ Emphasise safety throughout. Make the plan specific to {sport} movement demands.
         with col_b:
             st.info(
                 "💡 **Tip:** The AI already knows your sport, position, age, fitness level, "
-                "injury history and diet. Just ask your question naturally!"
+                "injury history and diet from the sidebar. Just ask your question naturally!"
             )
 
         if st.button("🎯 Ask AI Coach", type="primary"):
-            if not st.session_state.api_key_configured:
-                st.error("⚠️ Please go back to Tab 1 and configure your API Key first.")
-            elif not user_query.strip():
+            if not user_query.strip():
                 st.warning("Please type a question before submitting.")
             else:
                 custom_prompt = f"""
@@ -671,15 +662,14 @@ Advice Intensity: {intensity_val}/100
 
 Write your response like this:
 1. Start with 1-2 paragraphs of personalised advice that directly answers the question. Reference the athlete's sport, position, age, and any relevant injury history naturally in the text.
-2. Then provide a Markdown table with structured data, drills, steps, or breakdowns relevant to the question.
+2. Then provide a Markdown table with structured data, drills, steps, or breakdowns relevant to the question (use appropriate columns for the topic).
 3. End with 1 short paragraph of key tips or reminders specific to this athlete.
 
 Be conversational but expert. Do not use HTML tags. Reference the athlete's profile details throughout your answer.
 """
                 with st.spinner("🤖 Consulting your AI Coach..."):
-                    # Using gemini-1.5-flash as it is the current public model
                     custom_model = genai.GenerativeModel(
-                        "gemini-1.5-flash",
+                        "gemini-2.5-flash",
                         generation_config={
                             "temperature": ai_temp,
                             "max_output_tokens": 2048,
