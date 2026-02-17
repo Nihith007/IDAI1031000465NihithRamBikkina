@@ -322,502 +322,529 @@ st.markdown('<h1 class="main-header">🏋️ CoachBot AI</h1>', unsafe_allow_htm
 st.markdown('<p class="sub-header">Your Personal AI Fitness & Sports Coach - Powered by Gemini 2.5 Flash</p>', unsafe_allow_html=True)
 st.markdown('<p style="text-align: center; color: #1E88E5; font-weight: 500;">✨ Now with Organized Training Tables & Data ✨</p>', unsafe_allow_html=True)
 
+with tab1:
 # Sidebar for API Key and User Profile
-with st.sidebar:
-    st.header("⚙️ Configuration")
-    
-    # API Key from Streamlit Secrets or Input
-    api_key = None
-    
-    # Try to get API key from Streamlit secrets first
-    try:
-        if 'GEMINI_API_KEY' in st.secrets:
-            api_key = st.secrets['GEMINI_API_KEY']
-            st.success("✅ API Key loaded from secrets!")
-            genai.configure(api_key=api_key)
-            st.session_state.api_key_configured = True
-        else:
-            # Fallback to manual input
+    with st.sidebar:
+        st.header("⚙️ Configuration")
+        
+        # API Key from Streamlit Secrets or Input
+        api_key = None
+        
+        # Try to get API key from Streamlit secrets first
+        try:
+            if 'GEMINI_API_KEY' in st.secrets:
+                api_key = st.secrets['GEMINI_API_KEY']
+                st.success("✅ API Key loaded from secrets!")
+                genai.configure(api_key=api_key)
+                st.session_state.api_key_configured = True
+            else:
+                # Fallback to manual input
+                api_key = st.text_input("Enter Gemini API Key", type="password", 
+                                       help="Get your API key from Google AI Studio or configure in Streamlit secrets")
+                if api_key:
+                    genai.configure(api_key=api_key)
+                    st.session_state.api_key_configured = True
+                    st.success("✅ API Key Configured!")
+        except Exception as e:
+            # If secrets not available, use text input
             api_key = st.text_input("Enter Gemini API Key", type="password", 
-                                   help="Get your API key from Google AI Studio or configure in Streamlit secrets")
+                                   help="Get your API key from Google AI Studio")
             if api_key:
-                genai.configure(api_key=api_key)
-                st.session_state.api_key_configured = True
-                st.success("✅ API Key Configured!")
-    except Exception as e:
-        # If secrets not available, use text input
-        api_key = st.text_input("Enter Gemini API Key", type="password", 
-                               help="Get your API key from Google AI Studio")
-        if api_key:
-            try:
-                genai.configure(api_key=api_key)
-                st.session_state.api_key_configured = True
-                st.success("✅ API Key Configured!")
-            except Exception as e:
-                st.error(f"❌ Invalid API Key: {str(e)}")
-                st.session_state.api_key_configured = False
-    
-    st.markdown("---")
-    
-    # User Profile Section
-    st.header("👤 Your Profile")
-    
-    user_name = st.text_input("Name", placeholder="John Doe")
-    user_age = st.number_input("Age", min_value=10, max_value=100, value=15)
-    user_gender = st.selectbox("Gender", ["Male", "Female", "Other", "Prefer not to say"])
-    
-    st.markdown("---")
-    
-    # Sport Selection
-    st.header("⚽ Sport Details")
-    sport = st.selectbox(
-        "Select Your Sport",
-        ["Football/Soccer", "Cricket", "Basketball", "Athletics/Track & Field", 
-         "Tennis", "Swimming", "Volleyball", "Badminton", "Hockey", "Other"]
-    )
-    
-    # Position based on sport
-    position_options = {
-        "Football/Soccer": ["Goalkeeper", "Defender", "Midfielder", "Forward/Striker", "Winger"],
-        "Cricket": ["Batsman", "Bowler (Fast)", "Bowler (Spin)", "All-rounder", "Wicket-keeper"],
-        "Basketball": ["Point Guard", "Shooting Guard", "Small Forward", "Power Forward", "Center"],
-        "Athletics/Track & Field": ["Sprinter", "Middle Distance", "Long Distance", "Jumper", "Thrower"],
-        "Tennis": ["Singles Player", "Doubles Player", "Baseline Player", "Serve-and-Volley"],
-        "Swimming": ["Freestyle", "Backstroke", "Breaststroke", "Butterfly", "Individual Medley"],
-        "Volleyball": ["Setter", "Outside Hitter", "Middle Blocker", "Libero", "Opposite Hitter"],
-        "Badminton": ["Singles Player", "Doubles Player", "Mixed Doubles"],
-        "Hockey": ["Forward", "Midfielder", "Defender", "Goalkeeper"],
-        "Other": ["General Athlete"]
-    }
-    
-    position = st.selectbox("Player Position", position_options.get(sport, ["General"]))
-    
-    st.markdown("---")
-    
-    # Fitness Level & Goals
-    st.header("🎯 Fitness Details")
-    fitness_level = st.select_slider(
-        "Current Fitness Level",
-        options=["Beginner", "Intermediate", "Advanced", "Elite"]
-    )
-    
-    injury_history = st.text_area(
-        "Injury History/Risk Zones",
-        placeholder="e.g., Previous ankle sprain, knee sensitivity, shoulder pain",
-        help="Describe any past injuries or areas that need special attention"
-    )
-    
-    st.markdown("---")
-    
-    # Nutrition Preferences
-    st.header("🍽️ Nutrition Preferences")
-    diet_type = st.selectbox("Diet Type", ["Vegetarian", "Non-Vegetarian", "Vegan", "Pescatarian"])
-    allergies = st.text_input("Allergies/Food Restrictions", placeholder="e.g., Nuts, dairy, gluten")
-    calorie_goal = st.select_slider(
-        "Daily Calorie Goal",
-        options=["Maintenance", "Deficit (Weight Loss)", "Surplus (Muscle Gain)"]
-    )
-
-# Main content area
-if st.session_state.api_key_configured:
-    
-    # Feature Selection
-    st.header("🎯 What would you like CoachBot to help you with?")
-    
-    feature = st.selectbox(
-        "Select a Feature",
-        [
-            "1. Full-Body Workout Plan for [Position] in [Sport]",
-            "2. Safe Recovery Training Schedule for Athlete with [Injury]",
-            "3. Tactical Coaching Tips to Improve [Skill] in [Sport]",
-            "4. Week-Long Nutrition Guide for Young Athlete",
-            "5. Personalized Warm-up & Cooldown Routine",
-            "6. Mental Focus Routines for Tournaments",
-            "7. Hydration & Electrolyte Strategy",
-            "8. Pre-Match Visualization Techniques",
-            "9. Positional Decision-Making Drills",
-            "10. Mobility Workouts for Post-Injury Recovery"
-        ]
-    )
-    
-    # Additional context based on feature
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        training_intensity = st.select_slider(
-            "Training Intensity",
-            options=["Low", "Moderate", "High", "Very High"]
-        )
-        
-        training_duration = st.selectbox(
-            "Training Duration per Session",
-            ["30 minutes", "45 minutes", "60 minutes", "90 minutes", "120 minutes"]
-        )
-    
-    with col2:
-        training_frequency = st.selectbox(
-            "Training Frequency",
-            ["2-3 times/week", "4-5 times/week", "6 times/week", "Daily"]
-        )
-        
-        specific_goal = st.text_input(
-            "Specific Goal",
-            placeholder="e.g., Improve stamina, recover from injury, tournament prep"
-        )
-    
-    # Temperature control for AI creativity
-    with st.expander("🔧 Advanced Settings (Optional)"):
-        temperature = st.slider(
-            "AI Creativity Level",
-            min_value=0.0,
-            max_value=1.0,
-            value=0.5,
-            step=0.1,
-            help="Lower values give more conservative answers, higher values are more creative"
-        )
+                try:
+                    genai.configure(api_key=api_key)
+                    st.session_state.api_key_configured = True
+                    st.success("✅ API Key Configured!")
+                except Exception as e:
+                    st.error(f"❌ Invalid API Key: {str(e)}")
+                    st.session_state.api_key_configured = False
         
         st.markdown("---")
-        st.markdown("**📊 Display Settings**")
-        show_charts = st.checkbox("Show Training Tables & Data", value=True, 
-                                   help="Display organized tables with your plan")
-    
-    # Generate button
-    if st.button("🚀 Generate Personalized Plan", type="primary"):
         
-        # Build the prompt based on selected feature
-        user_context = f"""
-        User Profile:
-        - Name: {user_name if user_name else 'Athlete'}
-        - Age: {user_age}
-        - Gender: {user_gender}
-        - Sport: {sport}
-        - Position: {position}
-        - Fitness Level: {fitness_level}
-        - Injury History: {injury_history if injury_history else 'None'}
-        - Diet Type: {diet_type}
-        - Allergies: {allergies if allergies else 'None'}
-        - Calorie Goal: {calorie_goal}
-        - Training Intensity: {training_intensity}
-        - Training Duration: {training_duration}
-        - Training Frequency: {training_frequency}
-        - Specific Goal: {specific_goal if specific_goal else 'General improvement'}
-        """
+        # User Profile Section
+        st.header("👤 Your Profile")
         
-        # Prompt templates for each feature (10 REQUIRED PROMPTS)
-        prompts = {
-            "1. Full-Body Workout Plan for [Position] in [Sport]": f"""
-            As an experienced sports coach, create a comprehensive full-body workout plan for a {position} in {sport}.
-            
-            {user_context}
-            
-            Please provide:
-            1. Detailed workout routine with exercises, sets, and reps
-            2. Sport-specific exercises for their position
-            3. Safety considerations based on injury history
-            4. Progressive overload strategy
-            5. Rest and recovery recommendations
-            6. Weekly schedule with training days
-            
-            Format the response in a clear, structured manner with tables where appropriate.
-            """,
-            
-            "2. Safe Recovery Training Schedule for Athlete with [Injury]": f"""
-            As a sports physiotherapist and coach, create a safe recovery training schedule for an athlete with the following injury history: {injury_history if injury_history else 'General recovery needs'}.
-            
-            {user_context}
-            
-            Focus on:
-            1. Low-impact exercises suitable for injury recovery
-            2. Gradual progression back to full training (week-by-week plan)
-            3. Specific exercises to AVOID based on injury history
-            4. Flexibility and mobility work
-            5. Timeline for recovery phases (Week 1, 2, 3, 4, etc.)
-            6. Warning signs to watch for and when to rest
-            7. Return-to-sport criteria
-            
-            Prioritize safety and long-term health over quick returns. Provide a structured recovery timeline.
-            """,
-            
-            "3. Tactical Coaching Tips to Improve [Skill] in [Sport]": f"""
-            As a tactical coach specializing in {sport}, provide advanced coaching tips for a {position} to improve their tactical skills and game awareness.
-            
-            {user_context}
-            
-            Include:
-            1. Position-specific tactical awareness and responsibilities
-            2. Game-reading skills to develop
-            3. Decision-making scenarios and solutions
-            4. Communication strategies with teammates
-            5. Common tactical mistakes to avoid in this position
-            6. Training drills to improve tactical understanding
-            7. Professional examples and best practices
-            
-            Use specific examples from {sport} where relevant. Provide actionable tips.
-            """,
-            
-            "4. Week-Long Nutrition Guide for Young Athlete": f"""
-            As a sports nutritionist, create a comprehensive week-long nutrition guide for a {user_age}-year-old athlete.
-            
-            {user_context}
-            
-            Provide:
-            1. Daily meal plans for 7 days (Breakfast, Lunch, Dinner, Snacks)
-            2. Pre-training and post-training nutrition strategies
-            3. Macro breakdown (Proteins, Carbs, Fats) in a table format
-            4. Specific foods to support {sport} performance
-            5. Timing of meals around training sessions
-            6. Hydration recommendations throughout the day
-            7. Age-appropriate supplement suggestions (if any)
-            8. Sample grocery list
-            
-            Consider their dietary restrictions ({diet_type}, allergies: {allergies if allergies else 'none'}) and calorie goals ({calorie_goal}).
-            Present meal plans in an organized table format for easy reference.
-            """,
-            
-            "5. Personalized Warm-up & Cooldown Routine": f"""
-            Create a personalized warm-up and cooldown routine specifically for a {position} in {sport}.
-            
-            {user_context}
-            
-            Include:
-            1. Dynamic warm-up routine (10-15 minutes) - list specific exercises
-            2. Sport-specific activation drills for {sport}
-            3. Position-specific movement preparation for {position}
-            4. Modifications based on injury history: {injury_history if injury_history else 'none'}
-            5. Cooldown routine with static stretching (10-15 minutes)
-            6. Foam rolling sequence and mobility work
-            7. Breathing and recovery techniques
-            
-            Make it practical and easy to follow before every training session. Provide sets and duration for each exercise.
-            """,
-            
-            "6. Mental Focus Routines for Tournaments": f"""
-            As a sports psychologist, create a comprehensive mental preparation program for a {user_age}-year-old {position} preparing for tournaments in {sport}.
-            
-            {user_context}
-            
-            Cover:
-            1. Pre-tournament mental preparation (weeks before)
-            2. Week-of-tournament daily routines
-            3. Day-before and morning-of mental checklist
-            4. Visualization techniques specific to {sport} and {position}
-            5. Pressure management and performance anxiety strategies
-            6. Focus and concentration drills
-            7. Dealing with nervousness and pre-game jitters
-            8. Post-performance reflection techniques
-            9. Building confidence and positive self-talk
-            
-            Make it age-appropriate for a {user_age}-year-old and practical to implement.
-            """,
-            
-            "7. Hydration & Electrolyte Strategy": f"""
-            Design a comprehensive hydration and electrolyte strategy for a young {sport} athlete.
-            
-            {user_context}
-            
-            Provide:
-            1. Daily water intake recommendations (in liters/ml)
-            2. Pre-training hydration protocol (timing and amounts)
-            3. During-training hydration strategy
-            4. Post-training rehydration plan
-            5. Electrolyte balance strategies and when to use sports drinks
-            6. Signs of dehydration to watch for
-            7. Sport-specific hydration needs for {sport}
-            8. Hydration strategies for different weather conditions
-            9. Recommended drinks and timing throughout the day
-            10. Weekly hydration schedule table
-            
-            Consider their age ({user_age}) and training intensity ({training_intensity}).
-            Present in an organized format with clear guidelines.
-            """,
-            
-            "8. Pre-Match Visualization Techniques": f"""
-            Teach effective pre-match visualization techniques for a {position} in {sport}.
-            
-            {user_context}
-            
-            Include:
-            1. Step-by-step visualization process (how to do it)
-            2. What specifically to visualize as a {position} in {sport}
-            3. Successful plays and scenarios to imagine
-            4. Positioning and movement patterns to rehearse mentally
-            5. When to practice visualization (timeline before match)
-            6. Combining visualization with breathing techniques
-            7. Confidence-building mental imagery
-            8. Dealing with negative thoughts and doubts
-            9. Creating a consistent pre-match mental routine
-            10. Sample visualization script for {sport}
-            
-            Make it practical for a {user_age}-year-old athlete to implement independently.
-            """,
-            
-            "9. Positional Decision-Making Drills": f"""
-            Create position-specific decision-making drills for a {position} in {sport}.
-            
-            {user_context}
-            
-            Provide:
-            1. Situational awareness drills specific to {position}
-            2. Quick decision-making exercises under pressure
-            3. Game-like scenarios to practice (at least 5 scenarios)
-            4. Reading the game/opposition drills
-            5. Positioning and movement decision drills
-            6. Progressive difficulty levels (beginner to advanced)
-            7. Solo practice drills (can do alone)
-            8. Partner/team drills (with teammates)
-            9. Video analysis recommendations
-            10. Performance metrics to track improvement
-            
-            Focus on improving game intelligence and decision-making speed for {position}.
-            Provide clear instructions for each drill.
-            """,
-            
-            "10. Mobility Workouts for Post-Injury Recovery": f"""
-            Create a comprehensive mobility and flexibility program for post-injury recovery.
-            
-            {user_context}
-            
-            Include:
-            1. Gentle mobility exercises for affected areas: {injury_history if injury_history else 'general recovery'}
-            2. Full-body mobility routine (not just injured area)
-            3. Dynamic stretching sequences
-            4. Yoga-inspired movements for athletes
-            5. Frequency recommendations (daily schedule)
-            6. Duration for each session
-            7. Progression markers (when to advance)
-            8. Exercises to avoid during recovery
-            9. Pain management and when to stop
-            10. Timeline: Week 1-2, Week 3-4, Week 5-6, etc.
-            11. Return-to-sport mobility standards
-            
-            Emphasize safety and gradual progression. Provide detailed instructions with sets/reps/duration.
-            Make it specific to {sport} demands.
-            """
+        user_name = st.text_input("Name", placeholder="John Doe")
+        user_age = st.number_input("Age", min_value=10, max_value=100, value=15)
+        user_gender = st.selectbox("Gender", ["Male", "Female", "Other", "Prefer not to say"])
+        
+        st.markdown("---")
+        
+        # Sport Selection
+        st.header("⚽ Sport Details")
+        sport = st.selectbox(
+            "Select Your Sport",
+            ["Football/Soccer", "Cricket", "Basketball", "Athletics/Track & Field", 
+             "Tennis", "Swimming", "Volleyball", "Badminton", "Hockey", "Other"]
+        )
+        
+        # Position based on sport
+        position_options = {
+            "Football/Soccer": ["Goalkeeper", "Defender", "Midfielder", "Forward/Striker", "Winger"],
+            "Cricket": ["Batsman", "Bowler (Fast)", "Bowler (Spin)", "All-rounder", "Wicket-keeper"],
+            "Basketball": ["Point Guard", "Shooting Guard", "Small Forward", "Power Forward", "Center"],
+            "Athletics/Track & Field": ["Sprinter", "Middle Distance", "Long Distance", "Jumper", "Thrower"],
+            "Tennis": ["Singles Player", "Doubles Player", "Baseline Player", "Serve-and-Volley"],
+            "Swimming": ["Freestyle", "Backstroke", "Breaststroke", "Butterfly", "Individual Medley"],
+            "Volleyball": ["Setter", "Outside Hitter", "Middle Blocker", "Libero", "Opposite Hitter"],
+            "Badminton": ["Singles Player", "Doubles Player", "Mixed Doubles"],
+            "Hockey": ["Forward", "Midfielder", "Defender", "Goalkeeper"],
+            "Other": ["General Athlete"]
         }
         
-        selected_prompt = prompts.get(feature, prompts["1. Full-Body Workout Plan for [Position] in [Sport]"])
+        position = st.selectbox("Player Position", position_options.get(sport, ["General"]))
         
-        try:
-            # Show loading spinner
-            with st.spinner("🤖 CoachBot is creating your personalized plan..."):
-                
-                # Configure the model
-                generation_config = {
-                    "temperature": temperature,
-                    "top_p": 0.95,
-                    "top_k": 40,
-                    "max_output_tokens": 8192,
-                }
-                
-                model = genai.GenerativeModel(
-                    model_name="gemini-2.5-flash",
-                    generation_config=generation_config
-                )
-                
-                # Generate response
-                response = model.generate_content(selected_prompt)
-                
-                # Check if response was blocked or incomplete
-                if not response.text:
-                    st.error("⚠️ Response was blocked or incomplete. Please try again with a different prompt.")
-                    st.stop()
-                
-                # Display the result
-                st.markdown("---")
-                st.markdown("## 📋 Your Personalized Plan")
-                
-                st.markdown('<div class="output-box">', unsafe_allow_html=True)
-                st.markdown(response.text)
-                st.markdown('</div>', unsafe_allow_html=True)
-                
-                # Display tables if enabled
-                if 'show_charts' not in locals() or show_charts:
-                    display_tabular_dashboard(feature, training_frequency, training_duration)
-                
-                # Save to chat history
-                st.session_state.chat_history.append({
-                    "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    "feature": feature,
-                    "response": response.text
-                })
-                
-                # Download option
-                st.download_button(
-                    label="📥 Download Plan as Text File",
-                    data=response.text,
-                    file_name=f"coachbot_plan_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
-                    mime="text/plain"
-                )
-                
-                st.success("✅ Plan generated successfully! Review it carefully and consult with a coach if needed.")
-                
-        except Exception as e:
-            st.error(f"❌ Error generating plan: {str(e)}")
-            
-            # Provide helpful error messages
-            if "quota" in str(e).lower():
-                st.warning("⚠️ API quota exceeded. Please wait a moment and try again, or check your API key limits.")
-            elif "api key" in str(e).lower():
-                st.warning("⚠️ API key issue. Please verify your API key is correct and active.")
-            elif "blocked" in str(e).lower():
-                st.warning("⚠️ Content was blocked by safety filters. Try rephrasing your request.")
-            else:
-                st.info("💡 Try these solutions:\n- Check your API key\n- Simplify your request\n- Wait a moment and try again\n- Ensure you have internet connection")
-    
-    # Chat History Section
-    if st.session_state.chat_history:
         st.markdown("---")
-        with st.expander("📜 View Previous Plans"):
-            for i, entry in enumerate(reversed(st.session_state.chat_history[-5:])):
-                st.markdown(f"**{entry['timestamp']}** - {entry['feature']}")
-                st.text(entry['response'][:200] + "...")
-                st.markdown("---")
+        
+        # Fitness Level & Goals
+        st.header("🎯 Fitness Details")
+        fitness_level = st.select_slider(
+            "Current Fitness Level",
+            options=["Beginner", "Intermediate", "Advanced", "Elite"]
+        )
+        
+        injury_history = st.text_area(
+            "Injury History/Risk Zones",
+            placeholder="e.g., Previous ankle sprain, knee sensitivity, shoulder pain",
+            help="Describe any past injuries or areas that need special attention"
+        )
+        
+        st.markdown("---")
+        
+        # Nutrition Preferences
+        st.header("🍽️ Nutrition Preferences")
+        diet_type = st.selectbox("Diet Type", ["Vegetarian", "Non-Vegetarian", "Vegan", "Pescatarian"])
+        allergies = st.text_input("Allergies/Food Restrictions", placeholder="e.g., Nuts, dairy, gluten")
+        calorie_goal = st.select_slider(
+            "Daily Calorie Goal",
+            options=["Maintenance", "Deficit (Weight Loss)", "Surplus (Muscle Gain)"]
+        )
+    
+    # Main content area
+    if st.session_state.api_key_configured:
+        
+        # Feature Selection
+        st.header("🎯 What would you like CoachBot to help you with?")
+        
+        feature = st.selectbox(
+            "Select a Feature",
+            [
+                "1. Full-Body Workout Plan for [Position] in [Sport]",
+                "2. Safe Recovery Training Schedule for Athlete with [Injury]",
+                "3. Tactical Coaching Tips to Improve [Skill] in [Sport]",
+                "4. Week-Long Nutrition Guide for Young Athlete",
+                "5. Personalized Warm-up & Cooldown Routine",
+                "6. Mental Focus Routines for Tournaments",
+                "7. Hydration & Electrolyte Strategy",
+                "8. Pre-Match Visualization Techniques",
+                "9. Positional Decision-Making Drills",
+                "10. Mobility Workouts for Post-Injury Recovery"
+            ]
+        )
+        
+        # Additional context based on feature
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            training_intensity = st.select_slider(
+                "Training Intensity",
+                options=["Low", "Moderate", "High", "Very High"]
+            )
+            
+            training_duration = st.selectbox(
+                "Training Duration per Session",
+                ["30 minutes", "45 minutes", "60 minutes", "90 minutes", "120 minutes"]
+            )
+        
+        with col2:
+            training_frequency = st.selectbox(
+                "Training Frequency",
+                ["2-3 times/week", "4-5 times/week", "6 times/week", "Daily"]
+            )
+            
+            specific_goal = st.text_input(
+                "Specific Goal",
+                placeholder="e.g., Improve stamina, recover from injury, tournament prep"
+            )
+        
+        # Temperature control for AI creativity
+        with st.expander("🔧 Advanced Settings (Optional)"):
+            temperature = st.slider(
+                "AI Creativity Level",
+                min_value=0.0,
+                max_value=1.0,
+                value=0.5,
+                step=0.1,
+                help="Lower values give more conservative answers, higher values are more creative"
+            )
+            
+            st.markdown("---")
+            st.markdown("**📊 Display Settings**")
+            show_charts = st.checkbox("Show Training Tables & Data", value=True, 
+                                       help="Display organized tables with your plan")
+        
+        # Generate button
+        if st.button("🚀 Generate Personalized Plan", type="primary"):
+            
+            # Build the prompt based on selected feature
+            user_context = f"""
+            User Profile:
+            - Name: {user_name if user_name else 'Athlete'}
+            - Age: {user_age}
+            - Gender: {user_gender}
+            - Sport: {sport}
+            - Position: {position}
+            - Fitness Level: {fitness_level}
+            - Injury History: {injury_history if injury_history else 'None'}
+            - Diet Type: {diet_type}
+            - Allergies: {allergies if allergies else 'None'}
+            - Calorie Goal: {calorie_goal}
+            - Training Intensity: {training_intensity}
+            - Training Duration: {training_duration}
+            - Training Frequency: {training_frequency}
+            - Specific Goal: {specific_goal if specific_goal else 'General improvement'}
+            """
+            
+            # Prompt templates for each feature (10 REQUIRED PROMPTS)
+            prompts = {
+                "1. Full-Body Workout Plan for [Position] in [Sport]": f"""
+                As an experienced sports coach, create a comprehensive full-body workout plan for a {position} in {sport}.
+                
+                {user_context}
+                
+                Please provide:
+                1. Detailed workout routine with exercises, sets, and reps
+                2. Sport-specific exercises for their position
+                3. Safety considerations based on injury history
+                4. Progressive overload strategy
+                5. Rest and recovery recommendations
+                6. Weekly schedule with training days
+                
+                Format the response in a clear, structured manner with tables where appropriate.
+                """,
+                
+                "2. Safe Recovery Training Schedule for Athlete with [Injury]": f"""
+                As a sports physiotherapist and coach, create a safe recovery training schedule for an athlete with the following injury history: {injury_history if injury_history else 'General recovery needs'}.
+                
+                {user_context}
+                
+                Focus on:
+                1. Low-impact exercises suitable for injury recovery
+                2. Gradual progression back to full training (week-by-week plan)
+                3. Specific exercises to AVOID based on injury history
+                4. Flexibility and mobility work
+                5. Timeline for recovery phases (Week 1, 2, 3, 4, etc.)
+                6. Warning signs to watch for and when to rest
+                7. Return-to-sport criteria
+                
+                Prioritize safety and long-term health over quick returns. Provide a structured recovery timeline.
+                """,
+                
+                "3. Tactical Coaching Tips to Improve [Skill] in [Sport]": f"""
+                As a tactical coach specializing in {sport}, provide advanced coaching tips for a {position} to improve their tactical skills and game awareness.
+                
+                {user_context}
+                
+                Include:
+                1. Position-specific tactical awareness and responsibilities
+                2. Game-reading skills to develop
+                3. Decision-making scenarios and solutions
+                4. Communication strategies with teammates
+                5. Common tactical mistakes to avoid in this position
+                6. Training drills to improve tactical understanding
+                7. Professional examples and best practices
+                
+                Use specific examples from {sport} where relevant. Provide actionable tips.
+                """,
+                
+                "4. Week-Long Nutrition Guide for Young Athlete": f"""
+                As a sports nutritionist, create a comprehensive week-long nutrition guide for a {user_age}-year-old athlete.
+                
+                {user_context}
+                
+                Provide:
+                1. Daily meal plans for 7 days (Breakfast, Lunch, Dinner, Snacks)
+                2. Pre-training and post-training nutrition strategies
+                3. Macro breakdown (Proteins, Carbs, Fats) in a table format
+                4. Specific foods to support {sport} performance
+                5. Timing of meals around training sessions
+                6. Hydration recommendations throughout the day
+                7. Age-appropriate supplement suggestions (if any)
+                8. Sample grocery list
+                
+                Consider their dietary restrictions ({diet_type}, allergies: {allergies if allergies else 'none'}) and calorie goals ({calorie_goal}).
+                Present meal plans in an organized table format for easy reference.
+                """,
+                
+                "5. Personalized Warm-up & Cooldown Routine": f"""
+                Create a personalized warm-up and cooldown routine specifically for a {position} in {sport}.
+                
+                {user_context}
+                
+                Include:
+                1. Dynamic warm-up routine (10-15 minutes) - list specific exercises
+                2. Sport-specific activation drills for {sport}
+                3. Position-specific movement preparation for {position}
+                4. Modifications based on injury history: {injury_history if injury_history else 'none'}
+                5. Cooldown routine with static stretching (10-15 minutes)
+                6. Foam rolling sequence and mobility work
+                7. Breathing and recovery techniques
+                
+                Make it practical and easy to follow before every training session. Provide sets and duration for each exercise.
+                """,
+                
+                "6. Mental Focus Routines for Tournaments": f"""
+                As a sports psychologist, create a comprehensive mental preparation program for a {user_age}-year-old {position} preparing for tournaments in {sport}.
+                
+                {user_context}
+                
+                Cover:
+                1. Pre-tournament mental preparation (weeks before)
+                2. Week-of-tournament daily routines
+                3. Day-before and morning-of mental checklist
+                4. Visualization techniques specific to {sport} and {position}
+                5. Pressure management and performance anxiety strategies
+                6. Focus and concentration drills
+                7. Dealing with nervousness and pre-game jitters
+                8. Post-performance reflection techniques
+                9. Building confidence and positive self-talk
+                
+                Make it age-appropriate for a {user_age}-year-old and practical to implement.
+                """,
+                
+                "7. Hydration & Electrolyte Strategy": f"""
+                Design a comprehensive hydration and electrolyte strategy for a young {sport} athlete.
+                
+                {user_context}
+                
+                Provide:
+                1. Daily water intake recommendations (in liters/ml)
+                2. Pre-training hydration protocol (timing and amounts)
+                3. During-training hydration strategy
+                4. Post-training rehydration plan
+                5. Electrolyte balance strategies and when to use sports drinks
+                6. Signs of dehydration to watch for
+                7. Sport-specific hydration needs for {sport}
+                8. Hydration strategies for different weather conditions
+                9. Recommended drinks and timing throughout the day
+                10. Weekly hydration schedule table
+                
+                Consider their age ({user_age}) and training intensity ({training_intensity}).
+                Present in an organized format with clear guidelines.
+                """,
+                
+                "8. Pre-Match Visualization Techniques": f"""
+                Teach effective pre-match visualization techniques for a {position} in {sport}.
+                
+                {user_context}
+                
+                Include:
+                1. Step-by-step visualization process (how to do it)
+                2. What specifically to visualize as a {position} in {sport}
+                3. Successful plays and scenarios to imagine
+                4. Positioning and movement patterns to rehearse mentally
+                5. When to practice visualization (timeline before match)
+                6. Combining visualization with breathing techniques
+                7. Confidence-building mental imagery
+                8. Dealing with negative thoughts and doubts
+                9. Creating a consistent pre-match mental routine
+                10. Sample visualization script for {sport}
+                
+                Make it practical for a {user_age}-year-old athlete to implement independently.
+                """,
+                
+                "9. Positional Decision-Making Drills": f"""
+                Create position-specific decision-making drills for a {position} in {sport}.
+                
+                {user_context}
+                
+                Provide:
+                1. Situational awareness drills specific to {position}
+                2. Quick decision-making exercises under pressure
+                3. Game-like scenarios to practice (at least 5 scenarios)
+                4. Reading the game/opposition drills
+                5. Positioning and movement decision drills
+                6. Progressive difficulty levels (beginner to advanced)
+                7. Solo practice drills (can do alone)
+                8. Partner/team drills (with teammates)
+                9. Video analysis recommendations
+                10. Performance metrics to track improvement
+                
+                Focus on improving game intelligence and decision-making speed for {position}.
+                Provide clear instructions for each drill.
+                """,
+                
+                "10. Mobility Workouts for Post-Injury Recovery": f"""
+                Create a comprehensive mobility and flexibility program for post-injury recovery.
+                
+                {user_context}
+                
+                Include:
+                1. Gentle mobility exercises for affected areas: {injury_history if injury_history else 'general recovery'}
+                2. Full-body mobility routine (not just injured area)
+                3. Dynamic stretching sequences
+                4. Yoga-inspired movements for athletes
+                5. Frequency recommendations (daily schedule)
+                6. Duration for each session
+                7. Progression markers (when to advance)
+                8. Exercises to avoid during recovery
+                9. Pain management and when to stop
+                10. Timeline: Week 1-2, Week 3-4, Week 5-6, etc.
+                11. Return-to-sport mobility standards
+                
+                Emphasize safety and gradual progression. Provide detailed instructions with sets/reps/duration.
+                Make it specific to {sport} demands.
+                """
+            }
+            
+            selected_prompt = prompts.get(feature, prompts["1. Full-Body Workout Plan for [Position] in [Sport]"])
+            
+            try:
+                # Show loading spinner
+                with st.spinner("🤖 CoachBot is creating your personalized plan..."):
+                    
+                    # Configure the model
+                    generation_config = {
+                        "temperature": temperature,
+                        "top_p": 0.95,
+                        "top_k": 40,
+                        "max_output_tokens": 8192,
+                    }
+                    
+                    model = genai.GenerativeModel(
+                        model_name="gemini-2.5-flash",
+                        generation_config=generation_config
+                    )
+                    
+                    # Generate response
+                    response = model.generate_content(selected_prompt)
+                    
+                    # Check if response was blocked or incomplete
+                    if not response.text:
+                        st.error("⚠️ Response was blocked or incomplete. Please try again with a different prompt.")
+                        st.stop()
+                    
+                    # Display the result
+                    st.markdown("---")
+                    st.markdown("## 📋 Your Personalized Plan")
+                    
+                    st.markdown('<div class="output-box">', unsafe_allow_html=True)
+                    st.markdown(response.text)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                    
+                    # Display tables if enabled
+                    if 'show_charts' not in locals() or show_charts:
+                        display_tabular_dashboard(feature, training_frequency, training_duration)
+                    
+                    # Save to chat history
+                    st.session_state.chat_history.append({
+                        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "feature": feature,
+                        "response": response.text
+                    })
+                    
+                    # Download option
+                    st.download_button(
+                        label="📥 Download Plan as Text File",
+                        data=response.text,
+                        file_name=f"coachbot_plan_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                        mime="text/plain"
+                    )
+                    
+                    st.success("✅ Plan generated successfully! Review it carefully and consult with a coach if needed.")
+                    
+            except Exception as e:
+                st.error(f"❌ Error generating plan: {str(e)}")
+                
+                # Provide helpful error messages
+                if "quota" in str(e).lower():
+                    st.warning("⚠️ API quota exceeded. Please wait a moment and try again, or check your API key limits.")
+                elif "api key" in str(e).lower():
+                    st.warning("⚠️ API key issue. Please verify your API key is correct and active.")
+                elif "blocked" in str(e).lower():
+                    st.warning("⚠️ Content was blocked by safety filters. Try rephrasing your request.")
+                else:
+                    st.info("💡 Try these solutions:\n- Check your API key\n- Simplify your request\n- Wait a moment and try again\n- Ensure you have internet connection")
+        
+        # Chat History Section
+        if st.session_state.chat_history:
+            st.markdown("---")
+            with st.expander("📜 View Previous Plans"):
+                for i, entry in enumerate(reversed(st.session_state.chat_history[-5:])):
+                    st.markdown(f"**{entry['timestamp']}** - {entry['feature']}")
+                    st.text(entry['response'][:200] + "...")
+                    st.markdown("---")
 
-else:
-    # Instructions when API key is not configured
-    st.info("👈 Please enter your Gemini API Key in the sidebar to get started.")
-    
-    st.markdown("### 🚀 Getting Started")
-    st.markdown("""
-    1. **Get your API Key**: Visit [Google AI Studio](https://makersuite.google.com/app/apikey) to get your free Gemini API key
-    2. **Enter the API Key**: Paste it in the sidebar
-    3. **Fill your profile**: Complete your sport and fitness details
-    4. **Choose a feature**: Select what you want help with
-    5. **Generate your plan**: Click the button and get personalized coaching!
-    """)
-    
-    st.markdown("### ✨ Features")
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
+    else:
+        # Instructions when API key is not configured
+        st.info("👈 Please enter your Gemini API Key in the sidebar to get started.")
+        
+        st.markdown("### 🚀 Getting Started")
         st.markdown("""
-        **🏋️ Training Plans**
-        - Full-body workouts
-        - Recovery schedules
-        - Strength programs
-        - Speed & agility training
+        1. **Get your API Key**: Visit [Google AI Studio](https://makersuite.google.com/app/apikey) to get your free Gemini API key
+        2. **Enter the API Key**: Paste it in the sidebar
+        3. **Fill your profile**: Complete your sport and fitness details
+        4. **Choose a feature**: Select what you want help with
+        5. **Generate your plan**: Click the button and get personalized coaching!
         """)
-    
-    with col2:
-        st.markdown("""
-        **🎯 Tactical Coaching**
-        - Position-specific tips
-        - Decision-making drills
-        - Match preparation
-        - Mental focus techniques
-        """)
-    
-    with col3:
-        st.markdown("""
-        **🍽️ Nutrition & Recovery**
-        - Weekly meal plans
-        - Hydration strategies
-        - Post-injury mobility
-        - Tournament prep
-        """)
-    
-    st.info("📊 **NEW**: Every plan includes organized training tables and schedules automatically!")
+        
+        st.markdown("### ✨ Features")
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("""
+            **🏋️ Training Plans**
+            - Full-body workouts
+            - Recovery schedules
+            - Strength programs
+            - Speed & agility training
+            """)
+        
+        with col2:
+            st.markdown("""
+            **🎯 Tactical Coaching**
+            - Position-specific tips
+            - Decision-making drills
+            - Match preparation
+            - Mental focus techniques
+            """)
+        
+        with col3:
+            st.markdown("""
+            **🍽️ Nutrition & Recovery**
+            - Weekly meal plans
+            - Hydration strategies
+            - Post-injury mobility
+            - Tournament prep
+            """)
+        
+        st.info("📊 **NEW**: Every plan includes organized training tables and schedules automatically!")
 
+with tab2:
+    st.subheader("🧠 Custom Coach Consultation")
+    user_query = st.text_area("Ask a specific coaching question:", 
+                             placeholder="e.g., Suggest 3 drills for explosive speed.")
+    
+    col_a, col_b = st.columns([1, 2])
+    with col_a:
+        intensity_val = st.slider("Advice Intensity", 1, 100, 40)
+        ai_temp = intensity_val / 100.0
+
+    if st.button("Ask AI Coach", type="primary"):
+        if user_query:
+            custom_model = genai.GenerativeModel("gemini-2.5-flash", 
+                                               generation_config={"temperature": ai_temp})
+            
+            custom_prompt = (
+                f"User Question: {user_query}. Advice Intensity: {intensity_val}/100. "
+                "STRICT RULES: Output ONLY a short, technical Markdown table. NO HTML tags like <br>. "
+                "Keep descriptions extremely concise."
+            )
+            
+            with st.spinner("Consulting AI Coach..."):
+                answer = get_ai_response(custom_model, custom_prompt)
+                st.info("📋 Quick Coaching Chart:")
+                st.markdown(answer)
+    
 # Footer
 st.markdown("---")
 st.markdown("""
