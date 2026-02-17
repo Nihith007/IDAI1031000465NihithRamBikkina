@@ -94,6 +94,9 @@ The application was built with Streamlit and integrated with the Gemini API to g
 
 Design a strength and conditioning program for a 16-year-old midfielder playing football.
 
+<img width="1410" height="894" alt="image" src="https://github.com/user-attachments/assets/86fa9f8d-0966-4b0d-9df3-db51d1623e7c" />
+
+Create a beginner-to-advanced training progression plan for an athlete in basketball.
 
 
 
