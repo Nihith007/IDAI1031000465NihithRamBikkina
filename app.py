@@ -101,11 +101,28 @@ if "chat_history" not in st.session_state:
 # AI HELPER
 # ─────────────────────────────────────────────
 def get_ai_response(model, prompt):
-    """Call the model and clean up stray HTML."""
+    """Call the model and clean up stray HTML. Handle incomplete responses."""
     try:
         response = model.generate_content(prompt)
+        
+        # Check if response was generated
+        if not response or not response.candidates:
+            return "⚠️ No response generated. Please try again."
+        
+        # Get the first candidate
+        candidate = response.candidates[0]
+        
+        # Check finish reason
+        if hasattr(candidate, 'finish_reason'):
+            finish_reason = str(candidate.finish_reason)
+            if 'MAX_TOKENS' in finish_reason or 'LENGTH' in finish_reason:
+                st.warning("⚠️ Response was truncated due to length. The AI generated a partial answer.")
+        
+        # Extract text
         if not response.text:
             return "⚠️ Response was blocked or empty. Please try again."
+        
+        # Clean HTML
         return (response.text
                 .replace("<br>", "\n")
                 .replace("</br>", "")
@@ -597,6 +614,13 @@ Emphasise safety throughout. Make the plan specific to {sport} movement demands.
                         "top_p": 0.95,
                         "top_k": 40,
                         "max_output_tokens": 8192,
+                        "candidate_count": 1,
+                    },
+                    safety_settings={
+                        'HARASSMENT': 'BLOCK_NONE',
+                        'HATE_SPEECH': 'BLOCK_NONE',
+                        'SEXUALLY_EXPLICIT': 'BLOCK_NONE',
+                        'DANGEROUS_CONTENT': 'BLOCK_NONE',
                     }
                 )
                 result = get_ai_response(model, selected_prompt)
@@ -686,8 +710,15 @@ Be conversational, expert, and practical. Do not use HTML tags.
                         "gemini-2.5-flash",
                         generation_config={
                             "temperature": ai_temp,
-                            "max_output_tokens": 8192,  # Increased from 2048 to prevent cutoff
+                            "max_output_tokens": 8192,
+                            "candidate_count": 1,
                         },
+                        safety_settings={
+                            'HARASSMENT': 'BLOCK_NONE',
+                            'HATE_SPEECH': 'BLOCK_NONE',
+                            'SEXUALLY_EXPLICIT': 'BLOCK_NONE',
+                            'DANGEROUS_CONTENT': 'BLOCK_NONE',
+                        }
                     )
                     answer = get_ai_response(custom_model, custom_prompt)
 
